@@ -9,6 +9,12 @@ GitOps, Service-Mesh and observability techniques all out of the box.
 
 Have an existing kubernetes cluster config active and run `make install`
 
+This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
+
+![](images/1.png)
+
+![](images/2.png)
+
 
 ## Requirements 
 
