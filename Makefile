@@ -36,9 +36,7 @@ post-install:
 	sleep 20
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
-	kubectl apply -f resources/ingress/clusterissuer.yaml 
-	kubectl apply -f resources/ingress/argocd-ingress.yaml -n argocd
-	kubectl apply -f resources/application-bootstrap.yaml -n argocd
+	kubectl apply -f resources/ingress/ 
 get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 list:

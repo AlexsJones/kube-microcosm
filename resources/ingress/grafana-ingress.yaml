@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: argocd-ingress
-  namespace: argocd
+  name: grafana-ingress
+  namespace: monitoring
   annotations:
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header l5d-dst-override $service_name.$namespace.svc.cluster.local:$service_port;
@@ -13,13 +13,13 @@ metadata:
     cert-manager.io/cluster-issuer: le-clusterissuer
 spec:
   rules:
-  - host: argocd.jonesax.dev
+  - host: grafana.jonesax.dev
     http:
       paths:
       - backend:
-          serviceName: argo-argocd-server
+          serviceName: prometheus-grafana
           servicePort: 80
   tls:
     - hosts:
-      - argocd.jonesax.dev
-      secretName: argocd-tls
+      - grafana.jonesax.dev
+      secretName: grafana-tls
