@@ -15,6 +15,7 @@ This will install the cluster level components and ready argocd to deploy user a
 
 ![](images/2.png)
 
+![](images/3.png)
 
 ## Requirements 
 
