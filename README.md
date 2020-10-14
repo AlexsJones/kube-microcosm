@@ -17,6 +17,14 @@ This will install the cluster level components and ready argocd to deploy user a
 
 ![](images/3.png)
 
+
+## Web accessibility
+
+This installation uses cert-manager to provision certs for a domain.
+
+It is up to you to alter the domains used in resources/ingress to one you own and point that alias to the IP the cluster load balancer is available on.
+
+
 ## Requirements 
 
 - `step` for key generation for linkerd2
