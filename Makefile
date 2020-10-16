@@ -13,6 +13,7 @@ provision-linkerd:
 helm-repos:
 	helm repo add linkerd https://helm.linkerd.io/stable
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+	helm repo add falcosecurity https://falcosecurity.github.io/charts
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add argo https://argoproj.github.io/argo-helm
 	helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
@@ -29,9 +30,13 @@ pre-install:
 	kubectl annotate ns monitoring linkerd.io/inject=enabled
 	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled
 helm-install:
+	@:$(call check_defined, SLACK_WEBHOOK_URL, has no value)
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
+	helm install gatekeeper gatekeeper/gatekeeper
+	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_WEBHOOK_URL} --set=config.debug=true
+	helm install falco falcosecurity/falco -f resources/falco-config.yaml -n kube-system
 post-install:
 	sleep 20
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
@@ -42,3 +47,10 @@ get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+        $(error Undefined $1$(if $2, ($2))$(if $(value @), \
+                required by target `$@')))
