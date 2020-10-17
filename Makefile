@@ -36,7 +36,7 @@ helm-install:
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
 	helm install gatekeeper gatekeeper/gatekeeper
 	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_WEBHOOK_URL} --set=config.debug=true
-	helm install falco falcosecurity/falco -f resources/falco-config.yaml -n kube-system
+	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
 post-install:
 	sleep 20
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager

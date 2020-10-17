@@ -7,7 +7,7 @@ GitOps, Service-Mesh and observability techniques all out of the box.
 
 ## Installation
 
-Have an existing kubernetes cluster config active and run `make install`
+Have an existing kubernetes cluster config active and run `make install SLACK_WEBHOOK_URL=<mytoken>`
 
 This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
 
@@ -17,6 +17,9 @@ This will install the cluster level components and ready argocd to deploy user a
 
 ![](images/3.png)
 
+Falco sidekick enables you to receive cluster security events in slack (and other integrations)...
+
+![](images/falco.png)
 
 ## Web accessibility
 
