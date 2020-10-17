@@ -5,6 +5,12 @@ GitOps, Service-Mesh and observability techniques all out of the box.
 
 ![](images/diagram.png)
 
+## Showcase
+
+Showcasing the following projects within this cluster...
+
+![](images/projects.png)
+
 ## Installation
 
 Have an existing kubernetes cluster config active and run `make install SLACK_WEBHOOK_URL=<mytoken>`
