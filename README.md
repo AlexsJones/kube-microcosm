@@ -9,7 +9,7 @@ GitOps, Service-Mesh and observability techniques all out of the box.
 
 Showcasing the following projects within this cluster...
 
-![](images/projects.png)
+![](images/projects.svg)
 
 ## Installation
 
