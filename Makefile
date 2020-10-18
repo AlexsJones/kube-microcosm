@@ -27,9 +27,8 @@ pre-install:
 	kubectl create ns ingress-nginx || true
 	kubectl annotate ns argocd linkerd.io/inject=enabled
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled
-	kubectl annotate ns monitoring linkerd.io/inject=enabled
 	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled
-helm-install:
+helm-install: prometheus-slack-install
 	@:$(call check_defined, SLACK_WEBHOOK_URL, has no value)
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
@@ -38,11 +37,17 @@ helm-install:
 	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_WEBHOOK_URL} --set=config.debug=true
 	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
 post-install:
-	sleep 20
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
 	kubectl apply -f resources/ingress/ 
+	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/application-bootstrap.yaml -n argocd
+prometheus-slack-install:
+	@:$(call check_defined, SLACK_WEBHOOK_URL, has no value)
+	sed  's,SLACK_URL,${SLACK_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config.yaml
+	cat prom-config.yaml
+	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
+	rm prom-config.yaml
 get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 list:
