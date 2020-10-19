@@ -29,7 +29,7 @@ Falco sidekick enables you to receive cluster security events in slack (and othe
 
 ![](images/falco.png)
 
-Alert manager sending out alerts ( default channel is #alerts alter this in `resources/prometheus/alertmanager.yaml` )
+Alert manager sending out notifications...
 
 ![](images/am.png)
 
