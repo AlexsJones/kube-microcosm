@@ -8,10 +8,6 @@ _Up and running within 5 minutes..._
 
 ![](images/diagram.png)
 
-
-![](images/tour.gif)
-
-
 ## Showcase
 
 Showcasing the following projects within this cluster...
