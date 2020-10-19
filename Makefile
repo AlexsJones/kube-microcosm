@@ -46,7 +46,7 @@ post-install:
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
-	kubectl apply -f resources/application-bootstrap.yaml -n argocd
+	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
 prometheus-slack-install:
 	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
 	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config-0.yaml
