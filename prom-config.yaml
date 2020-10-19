@@ -2,7 +2,7 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      slack_api_url: SLACK_URL 
+      slack_api_url: "foo" 
     route:
       group_by: ['job']
       group_wait: 30s
@@ -23,7 +23,7 @@ alertmanager:
     - name: 'null'
     - name: 'slack'
       slack_configs:
-      - channel: 'CHNL'
+      - channel: 'alerts'
         send_resolved: false
         title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification'
         text: >-

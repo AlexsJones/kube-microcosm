@@ -13,7 +13,9 @@ Showcasing the following projects within this cluster...
 
 ## Installation
 
-Have an existing kubernetes cluster config active and run `make install SLACK_WEBHOOK_URL=<mytoken>`
+1. Setup your cluster envs like slack webhooks in `cluster.env`
+
+2. Ensure an existing kubernetes cluster config is active and run `make install`
 
 This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
 

@@ -1,5 +1,8 @@
-.PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd
+include cluster.env
+
+.PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
+
 provision-linkerd:
 	step certificate create identity.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure --san identity.linkerd.cluster.local
@@ -29,12 +32,12 @@ pre-install:
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled
 	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled
 helm-install: prometheus-slack-install
-	@:$(call check_defined, SLACK_WEBHOOK_URL, has no value)
+	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
 	helm install gatekeeper gatekeeper/gatekeeper
-	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_WEBHOOK_URL} --set=config.debug=true
+	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_FALCO_WEBHOOK_URL} --set=config.debug=true
 	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
 post-install:
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
@@ -43,8 +46,9 @@ post-install:
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/application-bootstrap.yaml -n argocd
 prometheus-slack-install:
-	@:$(call check_defined, SLACK_WEBHOOK_URL, has no value)
-	sed  's,SLACK_URL,${SLACK_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config.yaml
+	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
+	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config-0.yaml
+	sed  's,CHNL,${SLACK_PROMETHEUS_CHANNEL},g' prom-config-0.yaml > prom-config.yaml
 	cat prom-config.yaml
 	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
 	rm prom-config.yaml
@@ -52,6 +56,7 @@ get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
+
 check_defined = \
     $(strip $(foreach 1,$1, \
         $(call __check_defined,$1,$(strip $(value 2)))))
