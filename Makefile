@@ -28,9 +28,9 @@ pre-install:
 	kubectl create ns monitoring || true
 	kubectl create ns cert-manager || true
 	kubectl create ns ingress-nginx || true
-	kubectl annotate ns argocd linkerd.io/inject=enabled
-	kubectl annotate ns cert-manager linkerd.io/inject=enabled
-	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled
+	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
+	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
+	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-slack-install
 	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
@@ -40,9 +40,11 @@ helm-install: prometheus-slack-install
 	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_FALCO_WEBHOOK_URL} --set=config.debug=true
 	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
 post-install:
+	@:$(call check_defined, DOMAIN, has no value)
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
-	kubectl apply -f resources/ingress/ 
+	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
+	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/application-bootstrap.yaml -n argocd
 prometheus-slack-install:
