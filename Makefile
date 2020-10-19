@@ -2,7 +2,10 @@ include cluster.env
 
 .PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
-
+check:
+	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)
+	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
+	@:$(call check_defined, DOMAIN, has no value)
 provision-linkerd:
 	step certificate create identity.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure --san identity.linkerd.cluster.local
@@ -32,23 +35,20 @@ pre-install:
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns ingress-nginx linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-slack-install
-	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
 	helm install gatekeeper gatekeeper/gatekeeper
 	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_FALCO_WEBHOOK_URL} --set=config.debug=true
 	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
-post-install:
-	@:$(call check_defined, DOMAIN, has no value)
+post-install: check
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
-prometheus-slack-install:
-	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
+prometheus-slack-install: check
 	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config-0.yaml
 	sed  's,CHNL,${SLACK_PROMETHEUS_CHANNEL},g' prom-config-0.yaml > prom-config.yaml
 	cat prom-config.yaml
