@@ -1,6 +1,6 @@
 include cluster.env
 
-.PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list
+.PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list test clean all
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
 check:
 	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)

@@ -6,7 +6,7 @@ GitOps, Service-Mesh and observability techniques all out of the box.
 
 _Up and running within 5 minutes..._
 
-![](images/diagram.png)
+![](images/diagram.svg)
 
 ## Showcase
 
