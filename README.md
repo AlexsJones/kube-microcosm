@@ -14,6 +14,13 @@ Showcasing the following projects within this cluster...
 
 ![](images/projects.png)
 
+## Requirements 
+
+- `step` 
+- `helm` 
+- `kubectl`
+
+
 ## Installation
 
 1. Setup your cluster envs like slack webhooks in `cluster.env`
@@ -21,6 +28,8 @@ Showcasing the following projects within this cluster...
 2. Ensure an existing kubernetes cluster config is active and run `make install`
 
 This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
+
+## Screenshots
 
 ![](images/1.png)
 
@@ -43,9 +52,3 @@ This installation uses cert-manager to provision certs for a domain.
 
 It is up to you to alter the domains used in resources/ingress to one you own and point that alias to the IP the cluster load balancer is available on.
 
-
-## Requirements 
-
-- `step` for key generation for linkerd2
-- helm 
-- kubectl
