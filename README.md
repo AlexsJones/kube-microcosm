@@ -29,6 +29,15 @@ Showcasing the following projects within this cluster...
 
 This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
 
+## User Applications
+
+Users would be expected to operate within the ArgoCD control plane tier and utilise the App of Apps concept for bootstrapping with GitOps for day to day deployment.
+
+![](images/apps.svg)
+
+A quick refresh on GitOps [here](https://www.weave.works/technologies/gitops/)
+
+
 ## Screenshots
 
 ![](images/1.png)
