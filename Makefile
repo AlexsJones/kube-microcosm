@@ -49,7 +49,7 @@ post-install: check
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
 prometheus-slack-install: check
-	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/alertmanager.yaml > prom-config-0.yaml
+	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/prom-config.yaml > prom-config-0.yaml
 	sed  's,CHNL,${SLACK_PROMETHEUS_CHANNEL},g' prom-config-0.yaml > prom-config.yaml
 	cat prom-config.yaml
 	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
