@@ -17,7 +17,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: prometheus-grafana
+          serviceName: prom-grafana
           servicePort: 80
   tls:
     - hosts:
