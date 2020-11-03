@@ -43,6 +43,7 @@ helm-install: prometheus-slack-install
 post-install: check
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
+	kubectl apply -f resources/ingress/clusterissuer.yaml
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
