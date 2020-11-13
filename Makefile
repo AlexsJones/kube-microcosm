@@ -24,6 +24,7 @@ helm-repos:
 	helm repo add argo https://argoproj.github.io/argo-helm
 	helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 	helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
+	helm repo add longhorn https://charts.longhorn.io
 	helm repo update
 install: check helm-repos provision-linkerd pre-install helm-install post-install
 pre-install:
@@ -31,9 +32,11 @@ pre-install:
 	kubectl create ns monitoring || true
 	kubectl create ns cert-manager || true
 	kubectl create ns ingress-nginx || true
+	kubectl create ns longhorn-system || true
 	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-slack-install
+	helm install longhorn longhorn/longhorn --namespace longhorn-system
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
