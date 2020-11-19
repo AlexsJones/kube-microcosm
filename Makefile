@@ -1,8 +1,3 @@
-ifneq (,$(wildcard ./.env))
-    include .env
-    export
-endif
-
 .PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list test clean all
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
 check:

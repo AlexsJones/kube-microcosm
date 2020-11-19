@@ -23,9 +23,16 @@ Showcasing the following projects within this cluster...
 
 ## Installation
 
-1. Setup your cluster envs like slack webhooks in `cluster.env`
 
-2. Ensure an existing kubernetes cluster config is active and run `make install`
+1. Ensure an existing kubernetes cluster config is active
+2. Run the following ( With your variables): 
+
+```
+SLACK_FALCO_WEBHOOK_URL="https://foo" \
+SLACK_PROMETHEUS_WEBHOOK_URL="https://bar" \
+SLACK_PROMETHEUS_CHANNEL=alerts DOMAIN=jonesax.dev \
+make install
+```
 
 This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
 
