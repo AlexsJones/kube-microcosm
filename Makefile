@@ -28,6 +28,7 @@ helm-repos:
 	helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
 	helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
 	helm repo add longhorn https://charts.longhorn.io
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo update
 install: check helm-repos provision-linkerd pre-install helm-install post-install
 pre-install:
@@ -36,9 +37,10 @@ pre-install:
 	kubectl create ns cert-manager || true
 	kubectl create ns ingress-nginx || true
 	kubectl create ns longhorn-system || true
+	kubectl create ns tracing || true
 	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
-helm-install: prometheus-slack-install
+helm-install: prometheus-observability-install
 	helm install longhorn longhorn/longhorn --namespace longhorn-system
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
@@ -54,12 +56,13 @@ post-install: check
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
-prometheus-slack-install: check
+prometheus-observability-install: check
 	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/prom-config.yaml > prom-config-0.yaml
 	sed  's,CHNL,${SLACK_PROMETHEUS_CHANNEL},g' prom-config-0.yaml > prom-config.yaml
 	cat prom-config.yaml
 	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
 	rm prom-config.yaml
+	helm install jaeger jaegertracing/jaeger -n tracing
 get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 list:
