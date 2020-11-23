@@ -13,7 +13,7 @@ metadata:
     cert-manager.io/cluster-issuer: le-clusterissuer
 spec:
   rules:
-  - host: argocd.jonesax.dev
+  - host: argocd.DOMAIN
     http:
       paths:
       - backend:
@@ -21,5 +21,5 @@ spec:
           servicePort: 80
   tls:
     - hosts:
-      - argocd.jonesax.dev
+      - argocd.DOMAIN
       secretName: argocd-tls

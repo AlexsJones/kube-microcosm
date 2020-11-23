@@ -49,6 +49,7 @@ post-install: check
 	kubectl apply -f resources/ingress/clusterissuer.yaml
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
+	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/jaeger-ingress.yaml  | kubectl apply -f - -n tracing
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
 prometheus-observability-install: check
