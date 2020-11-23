@@ -1,3 +1,5 @@
+include cluster.env
+
 .PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list test clean all
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
 check:
@@ -61,8 +63,6 @@ prometheus-observability-install: check
 	helm install jaeger jaegertracing/jaeger -n tracing
 get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
-list:
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
 check_defined = \
     $(strip $(foreach 1,$1, \
