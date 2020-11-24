@@ -18,7 +18,7 @@ spec:
       paths:
       - backend:
           serviceName: jaeger-query
-          servicePort: 16686
+          servicePort: 80
   tls:
     - hosts:
       - tracing.DOMAIN
