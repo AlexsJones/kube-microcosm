@@ -35,8 +35,10 @@ pre-install:
 	kubectl create ns ingress-nginx || true
 	kubectl create ns longhorn-system || true
 	kubectl create ns tracing || true
+	kubectl create ns apps || true
 	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
+	kubectl annotate ns apps linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-observability-install
 	helm install longhorn longhorn/longhorn --namespace longhorn-system
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
