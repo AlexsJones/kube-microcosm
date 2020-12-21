@@ -34,37 +34,3 @@ SLACK_PROMETHEUS_CHANNEL=alerts DOMAIN=jonesax.dev \
 make install
 ```
 
-This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
-
-## User Applications
-
-Users would be expected to operate within the ArgoCD control plane tier and utilise the App of Apps concept for bootstrapping with GitOps for day to day deployment.
-
-![](images/apps.svg)
-
-A quick refresh on GitOps [here](https://www.weave.works/technologies/gitops/)
-
-
-## Screenshots
-
-![](images/1.png)
-
-![](images/2.png)
-
-![](images/3.png)
-
-Falco sidekick enables you to receive cluster security events in slack (and other integrations)...
-
-![](images/falco.png)
-
-Alert manager sending out notifications...
-
-![](images/am.png)
-
-
-## Web accessibility
-
-This installation uses cert-manager to provision certs for a domain.
-
-It is up to you to alter the domains used in resources/ingress to one you own and point that alias to the IP the cluster load balancer is available on.
-
