@@ -26,6 +26,7 @@ helm-repos:
 	helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
 	helm repo add longhorn https://charts.longhorn.io
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+	helm repo add k8ssandra https://helm.k8ssandra.io/
 	helm repo update
 install: check helm-repos provision-linkerd pre-install helm-install post-install
 pre-install:
@@ -35,12 +36,15 @@ pre-install:
 	kubectl create ns ingress-nginx || true
 	kubectl create ns longhorn-system || true
 	kubectl create ns tracing || true
+	kubectl create ns cassandra || true
 	kubectl create ns apps || true
 	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns apps linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-observability-install
 	helm install longhorn longhorn/longhorn --namespace longhorn-system
+	helm install k8ssandra-tools k8ssandra/k8ssandra -n cassandra
+	helm install k8ssandra-cluster k8ssandra/k8ssandra-cluster -n cassandra
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
@@ -53,7 +57,7 @@ post-install: check
 	kubectl apply -f resources/ingress/clusterissuer.yaml
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/grafana-ingress.yaml | kubectl apply -f - -n monitoring
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/argocd-ingress.yaml  | kubectl apply -f - -n argocd
-	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/jaeger-ingress.yaml  | kubectl apply -f - -n tracing
+	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/jaeger-ingress.yaml  | kubectl apply -f - -n monitoring
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
 prometheus-observability-install: check
@@ -62,10 +66,14 @@ prometheus-observability-install: check
 	cat prom-config.yaml
 	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
 	rm prom-config.yaml
-	helm install jaeger jaegertracing/jaeger -n tracing
+	helm install jaeger jaegertracing/jaeger-operator -n monitoring
+	kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role.yaml
+	kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role_binding.yaml
+	kubectl apply -f resources/jaeger/config.yaml -n monitoring
 get-argocd-password:
 	kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
-
+set-argocd-password:
+	kubectl -n argocd patch secret argocd-secret -p '{"stringData": {"admin.password": "$2a$10$Oa1Bh.rkf9UiRsV80TnjwuC06jKTBn1PK05dm/uspH..HyWw8HFRG","admin.passwordMtime": "'$(date +%FT%T%Z)'"}}'
 check_defined = \
     $(strip $(foreach 1,$1, \
         $(call __check_defined,$1,$(strip $(value 2)))))
