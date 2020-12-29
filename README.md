@@ -1,35 +1,36 @@
 # kube-microcosm
 
 A cluster that represents how a small start-up might be successful using a single Kubernetes cluster.
+
 GitOps, Service-Mesh and observability techniques all out of the box.
 
-![](images/diagram.png)
+_Up and running within 5 minutes..._
 
-## Installation
+![](images/diagram.svg)
 
-Have an existing kubernetes cluster config active and run `make install SLACK_WEBHOOK_URL=<mytoken>`
+## Showcase
 
-This will install the cluster level components and ready argocd to deploy user applications via the app-of-apps technique.
+Showcasing the following projects within this cluster...
 
-![](images/1.png)
-
-![](images/2.png)
-
-![](images/3.png)
-
-Falco sidekick enables you to receive cluster security events in slack (and other integrations)...
-
-![](images/falco.png)
-
-## Web accessibility
-
-This installation uses cert-manager to provision certs for a domain.
-
-It is up to you to alter the domains used in resources/ingress to one you own and point that alias to the IP the cluster load balancer is available on.
-
+![](images/projects.png)
 
 ## Requirements 
 
-- `step` for key generation for linkerd2
-- helm 
-- kubectl
+- `step` 
+- `helm` 
+- `kubectl`
+
+
+## Installation
+
+
+1. Ensure an existing kubernetes cluster config is active
+2. Run the following ( With your variables): 
+
+```
+SLACK_FALCO_WEBHOOK_URL="https://foo" \
+SLACK_PROMETHEUS_WEBHOOK_URL="https://bar" \
+SLACK_PROMETHEUS_CHANNEL=alerts DOMAIN=jonesax.dev \
+make install
+```
+

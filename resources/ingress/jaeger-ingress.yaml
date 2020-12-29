@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: grafana-ingress
+  name: tracing-ingress
   namespace: monitoring
   annotations:
     nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -13,13 +13,13 @@ metadata:
     cert-manager.io/cluster-issuer: le-clusterissuer
 spec:
   rules:
-  - host: grafana.DOMAIN
+  - host: tracing.DOMAIN
     http:
       paths:
       - backend:
-          serviceName: prom-grafana
-          servicePort: 80
+          serviceName: jaeger-with-create-schema-query
+          servicePort: 16686
   tls:
     - hosts:
-      - grafana.DOMAIN
-      secretName: grafana-tls
+      - tracing.DOMAIN
+      secretName: tracing-tls
