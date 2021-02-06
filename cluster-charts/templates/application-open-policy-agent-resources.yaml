@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: open-policy-agent-resources
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      valueFiles:
+      - values.yaml
+    path: .
+    repoURL: https://github.com/AlexsJones/open-policy-agent-resources.git
+    targetRevision: HEAD
