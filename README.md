@@ -25,7 +25,7 @@ Showcasing the following projects within this cluster...
 1. Ensure an existing Kubernetes cluster config is active. I like using [civo](https://www.civo.com).
 
 ```
-civo kubernetes create interesting-times-gang -n3 --wait --remove-applications=traefik
+civo kubernetes create interesting-times-gang -n3 --wait --remove-applications=traefik -s g3.k3s.large tycho --region NYC1
 civo kubernetes config interesting-times-gang -s
 ```
 

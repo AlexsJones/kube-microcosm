@@ -43,7 +43,7 @@ pre-install:
 	kubectl annotate ns apps linkerd.io/inject=enabled --overwrite
 helm-install: prometheus-observability-install
 	helm install longhorn longhorn/longhorn --namespace longhorn-system
-	helm install k8ssandra-cluster k8ssandra/k8ssandra-cluster -n cassandra --set=cassandra.cassandraLibDirVolume.storageClass=longhorn
+	helm install k8ssandra-cluster k8ssandra/k8ssandra -n cassandra --set=cassandra.cassandraLibDirVolume.storageClass=longhorn --set=cassandra.size=3
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
