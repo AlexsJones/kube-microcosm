@@ -33,8 +33,8 @@ civo kubernetes config interesting-times-gang -s
 
 ```
 // Example Slack webhook within a Slack App
-SLACK_FALCO_WEBHOOK_URL="https://hooks.slack.com/services/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" \
-SLACK_PROMETHEUS_WEBHOOK_URL="https://hooks.slack.com/services/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" \
-SLACK_PROMETHEUS_CHANNEL=alerts DOMAIN=cloudskunkworks.co.uk \
+SLACK_FALCO_WEBHOOK_URL="<YOUR SLACK WEBHOOK>" \
+SLACK_PROMETHEUS_WEBHOOK_URL="<YOUR SLACK WEBHOOK>" \
+SLACK_PROMETHEUS_CHANNEL=<YOUR SLACK CHANNEL> DOMAIN=<DOMAIN> \
 make install
 ```
