@@ -3,13 +3,13 @@ kind: Jaeger
 metadata:
   name: jaeger-with-create-schema
 spec:
-  strategy: allInOne 
+  strategy: allInOne
   storage:
     type: cassandra
-    options: 
+    options:
       cassandra:
-        servers: k8ssandra-dc1-service.cassandra
+        servers: k8ssandra-cluster-dc1-service.cassandra
         keyspace: jaeger_v1_datacenter1
-    cassandraCreateSchema: 
+    cassandraCreateSchema:
       datacenter: "datacenter1"
       mode: "test"

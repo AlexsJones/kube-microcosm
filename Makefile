@@ -1,5 +1,3 @@
-include cluster.env
-
 .PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list test clean all
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
 check:
@@ -7,11 +5,13 @@ check:
 	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
 	@:$(call check_defined, DOMAIN, has no value)
 provision-linkerd:
-	step certificate create identity.linkerd.cluster.local ca.crt ca.key \
---profile root-ca --no-password --insecure --san identity.linkerd.cluster.local
-	step certificate create identity.linkerd.cluster.local issuer.crt issuer.key --ca ca.crt --ca-key ca.key --profile intermediate-ca --not-after 8760h --no-password --insecure --san identity.linkerd.cluster.local
+	step certificate create root.linkerd.cluster.local ca.crt ca.key \
+--profile root-ca --no-password --insecure -f
+	step certificate create identity.linkerd.cluster.local issuer.crt issuer.key \
+--profile intermediate-ca --not-after 8760h --no-password --insecure \
+--ca ca.crt --ca-key ca.key -f
 	helm install linkerd2 \
-  --set-file global.identityTrustAnchorsPEM=ca.crt \
+	--set-file identityTrustAnchorsPEM=ca.crt \
   --set-file identity.issuer.tls.crtPEM=issuer.crt \
   --set-file identity.issuer.tls.keyPEM=issuer.key \
   --set identity.issuer.crtExpiry=$(d) \
