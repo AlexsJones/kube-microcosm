@@ -1,0 +1,12 @@
+on: [ push, pull_request ]
+name: Lint
+jobs:
+  helm-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: helm-check
+      uses: igabaydulin/helm-check-action@0.1.4
+      env:
+        CHART_LOCATION: cluster-charts
+        CHART_VALUES: cluster-charts/values.yaml
