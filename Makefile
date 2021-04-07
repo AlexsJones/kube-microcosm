@@ -1,9 +1,5 @@
 .PHONY: deploy get-argocd-password helm-repos install post-install pre-install provision-linkerd list test clean all
 d=`date -v+8760H +"%Y-%m-%dT%H:%M:%SZ"`
-check:
-	@:$(call check_defined, SLACK_FALCO_WEBHOOK_URL, has no value)
-	@:$(call check_defined, SLACK_PROMETHEUS_WEBHOOK_URL, has no value)
-	@:$(call check_defined, DOMAIN, has no value)
 provision-linkerd:
 	step certificate create root.linkerd.cluster.local ca.crt ca.key \
 --profile root-ca --no-password --insecure -f
@@ -28,7 +24,7 @@ helm-repos:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo add k8ssandra https://helm.k8ssandra.io/
 	helm repo update
-install: check helm-repos provision-linkerd pre-install helm-install post-install
+install: helm-repos provision-linkerd pre-install helm-install post-install
 pre-install:
 	kubectl create ns argocd || true
 	kubectl create ns monitoring || true
@@ -41,16 +37,22 @@ pre-install:
 	kubectl annotate ns argocd linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns cert-manager linkerd.io/inject=enabled --overwrite
 	kubectl annotate ns apps linkerd.io/inject=enabled --overwrite
-helm-install: prometheus-observability-install
+falco-install:
+	if [ -z "${SLACK_FALCO_WEBHOOK_URL}" ]; then \
+	        helm install sidekick falcosecurity/falcosidekick -n kube-system --set=config.debug=true; \
+	else \
+					helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_FALCO_WEBHOOK_URL} --set=config.debug=true; \
+	fi
+	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
+
+helm-install: prometheus-observability-install falco-install
 	helm install longhorn longhorn/longhorn --namespace longhorn-system
 	helm install k8ssandra-cluster k8ssandra/k8ssandra -n cassandra --set=cassandra.cassandraLibDirVolume.storageClass=longhorn --set=cassandra.size=3
 	helm install cert-manager --namespace cert-manager --version v1.0.2 jetstack/cert-manager --set=installCRDs=true
 	helm install nginx ingress-nginx/ingress-nginx --version 3.3.0 --namespace ingress-nginx
 	helm install argo argo/argo-cd -n argocd --set=server.extraArgs={--insecure}
 	helm install gatekeeper gatekeeper/gatekeeper
-	helm install sidekick falcosecurity/falcosidekick -n kube-system --set config.slack.webhookurl=${SLACK_FALCO_WEBHOOK_URL} --set=config.debug=true
-	helm install falco falcosecurity/falco -n kube-system --set=falco.httpOutput.enabled=true --set=falco.httpOutput.url=http://sidekick-falcosidekick.kube-system.svc.cluster.local:2801/ --set=falco.logLevel=debug --set=falco.jsonOutput=true
-post-install: check
+post-install:
 	kubectl wait --for=condition=ready pods -l "app=webhook" -n cert-manager
 	kubectl wait --for=condition=ready pods -l "app.kubernetes.io/name=ingress-nginx" -n ingress-nginx
 	kubectl apply -f resources/ingress/clusterissuer.yaml
@@ -59,12 +61,8 @@ post-install: check
 	sed 's,DOMAIN,${DOMAIN},g' resources/ingress/jaeger-ingress.yaml  | kubectl apply -f - -n monitoring
 	kubectl apply -f resources/prometheus/prometheusrules.yaml -n monitoring
 	kubectl apply -f resources/argocd/application-bootstrap.yaml -n argocd
-prometheus-observability-install: check
-	sed  's,SLACK_URL,${SLACK_PROMETHEUS_WEBHOOK_URL},g' resources/prometheus/prom-config.yaml > prom-config-0.yaml
-	sed  's,CHNL,${SLACK_PROMETHEUS_CHANNEL},g' prom-config-0.yaml > prom-config.yaml
-	cat prom-config.yaml
-	helm install prom prometheus-community/kube-prometheus-stack -n monitoring -f prom-config.yaml
-	rm prom-config.yaml
+prometheus-observability-install:
+	helm install prom prometheus-community/kube-prometheus-stack -n monitoring
 	helm install jaeger jaegertracing/jaeger-operator -n monitoring
 	kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role.yaml
 	kubectl create -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/cluster_role_binding.yaml
